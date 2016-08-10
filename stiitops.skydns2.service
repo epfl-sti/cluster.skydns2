@@ -1,0 +1,16 @@
+[Unit]
+Description=Run SkyDNS2 on a fixed IPv6 address
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+RestartSec=5s
+TimeoutStartSec=120
+TimeoutStopSec=25
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "docker ps -a | grep %p 1>/dev/null && docker rm %p || true"
+ExecStart=/usr/bin/docker run --rm --name=%p \
+  --ip6 2001:620:61e:101::300 --net net10 \
+  -e ETCD_MACHINES='http://${HOST_IP}:4001' \
+  skynetservices/skydns:latest -addr 0.0.0.0:53 -nameservers 192.168.11.253:53

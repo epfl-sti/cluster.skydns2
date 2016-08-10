@@ -1,0 +1,16 @@
+[Unit]
+Description=Registers all Docker jobs into the etcd directories that SkyDNS reads from
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+RestartSec=5s
+TimeoutStartSec=120
+TimeoutStopSec=25
+EnvironmentFile=/etc/environment
+ExecStartPre=/bin/sh -c "docker ps -a | grep %p 1>/dev/null && docker rm %p || true"
+ExecStart=/usr/bin/docker run      --rm      --name=%p       --net=host       --volume=/var/run/docker.sock:/tmp/docker.sock       registry.service.consul:5000/registrator:latest      skydns2:///skydns.local
+
+[X-Fleet]
+Global=true
